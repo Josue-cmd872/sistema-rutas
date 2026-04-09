@@ -1,0 +1,893 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Catalans Store</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --accent:#185FA5;--accent-light:#E6F1FB;--accent-dark:#0e4a85;
+    --bg:#f0ede8;--surface:#fff;--surface2:#fafaf7;
+    --border:rgba(0,0,0,.10);--border-md:rgba(0,0,0,.16);
+    --text:#1a1a1a;--muted:#6b6b6b;
+    --green:#3B6D11;--green-light:#EAF3DE;
+    --red:#A32D2D;--red-light:#FCEBEB;
+    --amber:#854F0B;--amber-light:#FAEEDA;
+    --purple:#534AB7;--purple-light:#EEEDFE;
+    --radius:10px;--radius-lg:14px
+  }
+  html,body{height:100%}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text)}
+
+  /* Header */
+  header{background:var(--surface);border-bottom:.5px solid var(--border);
+    padding:0 20px;display:flex;align-items:center;justify-content:space-between;
+    height:54px;position:sticky;top:0;z-index:200;box-shadow:0 1px 8px rgba(0,0,0,.05)}
+  .header-left{display:flex;align-items:center;gap:10px}
+  .logo-dot{width:32px;height:32px;background:var(--accent);border-radius:8px;
+    display:flex;align-items:center;justify-content:center;font-size:16px;transition:background .3s}
+  .logo-text{font-size:15px;font-weight:700;letter-spacing:-.3px}
+  .logo-sub{font-size:11px;color:var(--muted)}
+  .header-right{display:flex;align-items:center;gap:8px}
+  .user-badge{font-size:11px;padding:4px 10px;border-radius:20px;
+    background:var(--accent-light);color:var(--accent);font-weight:600;transition:all .3s}
+  .btn-logout{padding:6px 12px;border-radius:var(--radius);border:.5px solid var(--border-md);
+    background:var(--surface);cursor:pointer;font-size:12px;color:var(--muted);font-family:inherit}
+  .btn-logout:hover{background:var(--bg)}
+
+  /* Layout */
+  .layout{display:flex;height:calc(100vh - 54px)}
+
+  /* Sidebar */
+  nav{width:200px;flex-shrink:0;background:var(--surface);
+    border-right:.5px solid var(--border);padding:16px 10px;
+    display:flex;flex-direction:column;gap:4px}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;
+    border-radius:var(--radius);cursor:pointer;font-size:13px;color:var(--muted);
+    border:none;background:none;width:100%;text-align:left;transition:all .12s;font-family:inherit}
+  .nav-item:hover{background:var(--bg);color:var(--text)}
+  .nav-item.active{font-weight:600}
+  .nav-icon{font-size:15px;width:18px;text-align:center}
+  .nav-sep{height:.5px;background:var(--border);margin:6px 0}
+
+  /* Main */
+  main{flex:1;overflow-y:auto;padding:24px 20px}
+  .section{display:none;max-width:680px}
+  .section.visible{display:block}
+  h2{font-size:18px;font-weight:700;margin-bottom:16px}
+  h3{font-size:15px;font-weight:600;margin-bottom:12px}
+  h4{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+
+  /* Cards */
+  .card{background:var(--surface);border:.5px solid var(--border);
+    border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:12px}
+
+  /* Forms */
+  .field{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .field label{font-size:13px;color:var(--muted);width:85px;flex-shrink:0}
+  .field input,.field select{flex:1;min-width:130px;padding:8px 11px;
+    border:.5px solid var(--border-md);border-radius:var(--radius);font-size:13px;
+    background:var(--surface2);color:var(--text);outline:none;font-family:inherit}
+  .field input:focus,.field select:focus{border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(24,95,165,.08);background:#fff}
+
+  /* Buttons */
+  .btn{padding:8px 15px;border-radius:var(--radius);border:.5px solid var(--border-md);
+    background:var(--surface);cursor:pointer;font-size:13px;color:var(--text);
+    transition:all .12s;font-family:inherit}
+  .btn:hover{background:var(--bg)}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn-primary:hover{background:var(--accent-dark)}
+  .btn-sm{padding:5px 10px;font-size:12px}
+  .btn-danger{color:var(--red);border-color:#F7C1C1;background:var(--red-light)}
+  .btn-edit{color:var(--accent);border-color:#B5D4F4;background:var(--accent-light)}
+
+  /* Lists */
+  .list-row{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 0;border-bottom:.5px solid var(--border);gap:8px}
+  .list-row:last-child{border-bottom:none}
+  .item-name{font-weight:500;font-size:14px}
+  .item-sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .actions{display:flex;gap:6px;flex-shrink:0}
+
+  /* Badges */
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+  .bl{background:var(--accent-light);color:var(--accent)}
+  .bj{background:var(--green-light);color:var(--green)}
+  .ba{background:var(--amber-light);color:var(--amber)}
+  .ruta-tag{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+
+  /* Metrics */
+  .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px}
+  .metric{background:var(--surface);border:.5px solid var(--border);
+    border-radius:var(--radius);padding:14px;text-align:center}
+  .metric-lbl{font-size:11px;color:var(--muted);margin-bottom:6px}
+  .metric-val{font-size:20px;font-weight:700}
+  .pos{color:var(--green)}
+  .neg{color:var(--red)}
+
+  /* Venta blocks */
+  .venta-block{border:.5px solid var(--border);border-radius:var(--radius);
+    padding:14px;margin-bottom:10px;background:var(--surface2)}
+  .venta-block .cn{font-weight:600;font-size:14px;margin-bottom:10px}
+  .venta-line{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+  .venta-line .lbl{font-size:13px;color:var(--muted);min-width:140px}
+  .venta-line input{padding:6px 9px;border:.5px solid var(--border-md);
+    border-radius:8px;font-size:13px;outline:none;background:var(--surface);color:var(--text);font-family:inherit}
+  .venta-line input:focus{border-color:var(--accent)}
+  .vqty{width:70px}
+  .vpv{width:90px}
+  .vtotal{font-size:13px;font-weight:600}
+  .vcli-total{font-size:13px;color:var(--muted);margin-top:8px;
+    border-top:.5px solid var(--border);padding-top:8px}
+  .vcli-total strong{color:var(--text)}
+
+  /* Edit inline */
+  .edit-inline{display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap}
+  .edit-inline input{width:90px;padding:6px 8px;border:.5px solid var(--border-md);
+    border-radius:7px;font-size:13px;outline:none;font-family:inherit}
+
+  /* PIN */
+  .pin-wrap{position:relative;min-height:320px}
+  .pin-overlay{position:absolute;inset:0;background:rgba(240,237,232,.88);
+    backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;
+    z-index:10;border-radius:var(--radius-lg)}
+  .pin-box{background:var(--surface);border-radius:var(--radius-lg);
+    padding:24px 20px;text-align:center;width:250px;box-shadow:0 8px 32px rgba(0,0,0,.12)}
+  .pin-box h3{margin-bottom:4px}
+  .pin-sub{font-size:13px;color:var(--muted);margin:4px 0 14px}
+  .dots{display:flex;justify-content:center;gap:10px;margin-bottom:6px}
+  .dot{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--border-md);
+    background:var(--bg);transition:all .12s}
+  .dot.on{background:var(--accent);border-color:var(--accent)}
+  .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
+  .key{padding:11px;border-radius:var(--radius);border:.5px solid var(--border);
+    background:var(--bg);cursor:pointer;font-size:16px;font-weight:600;
+    transition:all .1s;font-family:inherit}
+  .key:hover{background:#e0ddd8}
+  .key:active{transform:scale(.94)}
+
+  /* Toast */
+  .toast{position:fixed;bottom:20px;right:20px;background:var(--text);color:#fff;
+    padding:10px 18px;border-radius:var(--radius);font-size:13px;z-index:999;
+    transform:translateY(80px);opacity:0;transition:all .25s;pointer-events:none}
+  .toast.show{transform:translateY(0);opacity:1}
+  .toast.ok{background:var(--green)}
+  .toast.err{background:var(--red)}
+
+  /* Admin ruta section header */
+  .ruta-section{margin-bottom:16px}
+  .ruta-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;
+    padding-bottom:8px;border-bottom:.5px solid var(--border)}
+  .ruta-color-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+  .empty{font-size:13px;color:var(--muted);padding:6px 0}
+  .loading{text-align:center;padding:24px;color:var(--muted);font-size:13px}
+  @media(max-width:580px){nav{display:none};main{padding:16px 12px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-dot" id="hdr-dot">🐓</div>
+    <div>
+      <div class="logo-text">Catalans Store</div>
+      <div class="logo-sub" id="hdr-sub">Cargando...</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="user-badge" id="hdr-badge">...</span>
+    <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav id="sidebar">
+    <button class="nav-item active" id="nav-productos" onclick="showTab('productos',this)"><span class="nav-icon">📦</span> Productos</button>
+    <button class="nav-item" id="nav-clientes"  onclick="showTab('clientes',this)"><span class="nav-icon">👥</span> Clientes</button>
+    <button class="nav-item" id="nav-ruta"      onclick="showTab('ruta',this)"><span class="nav-icon">🗺️</span> Ruta del día</button>
+    <button class="nav-item" id="nav-historial" onclick="showTab('historial',this)"><span class="nav-icon">📋</span> Historial</button>
+    <div class="nav-sep" id="nav-sep-admin" style="display:none"></div>
+    <button class="nav-item" id="nav-ganancias" onclick="showTab('ganancias',this)" style="display:none"><span class="nav-icon">🔒</span> Ganancias</button>
+  </nav>
+
+  <main>
+    <!-- PRODUCTOS -->
+    <div id="sec-productos" class="section visible">
+      <h2>Base de datos de productos</h2>
+      <div class="card">
+        <h4>Agregar producto</h4>
+        <div class="field"><label>Producto</label><input type="text" id="p-nombre" placeholder="Ej: Caja de huevo grande"/></div>
+        <div class="field"><label>Costo (Q)</label><input type="number" id="p-costo" placeholder="0.00" min="0" step="0.01"/></div>
+        <div class="field"><label>Unidad</label><input type="text" id="p-unidad" placeholder="caja, bolsa, unidad..."/></div>
+        <button class="btn btn-primary" onclick="agregarProducto()">+ Agregar producto</button>
+      </div>
+      <div id="lista-productos"><div class="loading">Cargando...</div></div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div id="sec-clientes" class="section">
+      <h2>Clientes</h2>
+      <div class="card">
+        <h4>Agregar cliente</h4>
+        <div class="field"><label>Nombre</label><input type="text" id="cl-nombre" placeholder="Nombre del cliente"/></div>
+        <div class="field"><label>Día de visita</label>
+          <select id="cl-ruta">
+            <option value="lunes">Lunes</option>
+            <option value="jueves">Jueves</option>
+            <option value="ambos">Ambos días</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="agregarCliente()">+ Agregar cliente</button>
+      </div>
+      <div id="lista-clientes"><div class="loading">Cargando...</div></div>
+    </div>
+
+    <!-- RUTA DEL DÍA -->
+    <div id="sec-ruta" class="section">
+      <h2>Registrar ventas del día</h2>
+      <div class="field" style="margin-bottom:16px">
+        <label>Día de ruta</label>
+        <select id="dia-ruta" onchange="renderRuta()">
+          <option value="lunes">Lunes</option>
+          <option value="jueves">Jueves</option>
+        </select>
+      </div>
+      <div id="ruta-lista"><div class="loading">Cargando...</div></div>
+      <button class="btn btn-primary" onclick="guardarVentas()" style="margin-top:8px">Guardar ventas del día</button>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div id="sec-historial" class="section">
+      <h2>Historial de ventas</h2>
+      <div class="metric-grid" id="met-hist"></div>
+      <div id="hist-lista"><div class="loading">Cargando...</div></div>
+    </div>
+
+    <!-- GANANCIAS (solo admin) -->
+    <div id="sec-ganancias" class="section">
+      <h2>Ganancias — todas las rutas</h2>
+      <div class="pin-wrap">
+        <div class="pin-overlay" id="pin-overlay">
+          <div class="pin-box">
+            <h3>Acceso Admin</h3>
+            <p class="pin-sub">Ingresa tu PIN de 4 dígitos</p>
+            <div class="dots">
+              <div class="dot" id="d0"></div><div class="dot" id="d1"></div>
+              <div class="dot" id="d2"></div><div class="dot" id="d3"></div>
+            </div>
+            <div id="pin-err" style="min-height:16px;font-size:12px;color:var(--red);margin-bottom:6px"></div>
+            <div class="numpad">
+              <button class="key" onclick="pk('1')">1</button><button class="key" onclick="pk('2')">2</button><button class="key" onclick="pk('3')">3</button>
+              <button class="key" onclick="pk('4')">4</button><button class="key" onclick="pk('5')">5</button><button class="key" onclick="pk('6')">6</button>
+              <button class="key" onclick="pk('7')">7</button><button class="key" onclick="pk('8')">8</button><button class="key" onclick="pk('9')">9</button>
+              <button class="key" onclick="pk('←')" style="font-size:13px">←</button>
+              <button class="key" onclick="pk('0')">0</button>
+              <button class="key" onclick="pk('ok')" style="font-size:12px">OK</button>
+            </div>
+          </div>
+        </div>
+        <div id="gan-inner" style="display:none"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let me       = null;
+let productos = [];
+let clientes  = [];
+let ventas    = [];
+let pinVal    = '';
+let editProd  = null;
+
+// ── Boot ───────────────────────────────────────────────────────────────────
+(async () => {
+  me = await api('/api/me');
+  if (!me) return;
+  applyTheme(me);
+  await Promise.all([loadProductos(), loadClientes()]);
+  renderProductos();
+  renderClientes();
+})();
+
+function applyTheme(u) {
+  const c = u.color || '#185FA5';
+  document.documentElement.style.setProperty('--accent', c);
+
+  const lightMap = {
+    '#185FA5': '#E6F1FB', '#3B6D11': '#EAF3DE', '#854F0B': '#FAEEDA'
+  };
+  const light = lightMap[c] || '#E6F1FB';
+  document.documentElement.style.setProperty('--accent-light', light);
+
+  const darkMap = {
+    '#185FA5': '#0e4a85', '#3B6D11': '#27500A', '#854F0B': '#633806'
+  };
+  document.documentElement.style.setProperty('--accent-dark', darkMap[c] || '#0e4a85');
+
+  document.getElementById('hdr-dot').style.background = c;
+
+  if (u.role === 'admin') {
+    document.getElementById('hdr-sub').textContent   = 'Administrador — todas las rutas';
+    document.getElementById('hdr-badge').textContent  = '👑 Admin';
+    document.getElementById('hdr-badge').style.background = '#FAEEDA';
+    document.getElementById('hdr-badge').style.color      = '#854F0B';
+    document.getElementById('nav-ganancias').style.display = 'flex';
+    document.getElementById('nav-sep-admin').style.display = 'block';
+    document.title = 'Catalans Store — Admin';
+  } else {
+    document.getElementById('hdr-sub').textContent   = u.rutaNombre || 'Ruta';
+    document.getElementById('hdr-badge').textContent  = u.rutaNombre || '';
+    document.getElementById('hdr-badge').style.background = light;
+    document.getElementById('hdr-badge').style.color      = c;
+    document.title = 'Catalans Store — ' + (u.rutaNombre || '');
+  }
+
+  // Active nav color
+  document.querySelectorAll('.nav-item.active').forEach(el => {
+    el.style.background = light;
+    el.style.color      = c;
+  });
+}
+
+// ── API ────────────────────────────────────────────────────────────────────
+async function api(url, opts = {}) {
+  const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  if (res.status === 401) { window.location.href = '/login'; return null; }
+  return res.json();
+}
+
+async function loadProductos() { const d = await api('/api/productos'); if (d) productos = d; }
+async function loadClientes()  { const d = await api('/api/clientes');  if (d) clientes  = d; }
+async function loadVentas()    { const d = await api('/api/ventas');    if (d) ventas    = d; }
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+async function showTab(t, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('.nav-item').forEach(b => {
+    b.classList.remove('active');
+    b.style.background = '';
+    b.style.color      = '';
+  });
+  document.getElementById('sec-' + t).classList.add('visible');
+  btn.classList.add('active');
+  if (me) {
+    btn.style.background = me.role === 'admin' ? '#FAEEDA' : (document.documentElement.style.getPropertyValue('--accent-light') || '#E6F1FB');
+    btn.style.color      = me.color || '#185FA5';
+  }
+
+  if (t === 'productos') { await loadProductos(); renderProductos(); }
+  if (t === 'clientes')  { await loadClientes();  renderClientes(); }
+  if (t === 'ruta')      { await Promise.all([loadProductos(), loadClientes()]); renderRuta(); }
+  if (t === 'historial') { await loadVentas();    renderHistorial(); }
+  if (t === 'ganancias') initGanancias();
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+let tt;
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(tt);
+  tt = setTimeout(() => el.className = 'toast', 2800);
+}
+
+async function logout() {
+  await api('/api/logout', { method: 'POST' });
+  window.location.href = '/login';
+}
+
+// ── PRODUCTOS ──────────────────────────────────────────────────────────────
+async function agregarProducto() {
+  const nombre = document.getElementById('p-nombre').value.trim();
+  const costo  = parseFloat(document.getElementById('p-costo').value);
+  const unidad = document.getElementById('p-unidad').value.trim() || 'unidad';
+  if (!nombre || isNaN(costo)) { toast('Completa nombre y costo', 'err'); return; }
+  const r = await api('/api/productos', { method: 'POST', body: JSON.stringify({ nombre, costo, unidad }) });
+  if (r?.id) {
+    productos.push({ id: r.id, nombre, costo, unidad });
+    document.getElementById('p-nombre').value = '';
+    document.getElementById('p-costo').value  = '';
+    document.getElementById('p-unidad').value = '';
+    renderProductos();
+    toast('Producto agregado');
+  }
+}
+
+function renderProductos() {
+  const el = document.getElementById('lista-productos');
+  if (!productos.length) { el.innerHTML = '<p class="empty">Sin productos aún.</p>'; return; }
+  el.innerHTML = productos.map(p => `
+    <div class="card" style="margin-bottom:8px;padding:12px 16px">
+      <div class="list-row">
+        <div style="flex:1">
+          <div class="item-name">${esc(p.nombre)} <span style="font-size:11px;color:var(--muted);background:var(--bg);padding:2px 7px;border-radius:20px;border:.5px solid var(--border)">${esc(p.unidad)}</span></div>
+          ${editProd !== p.id ? `<div class="item-sub">Costo: <strong>Q${p.costo.toFixed(2)}</strong></div>` : ''}
+          ${editProd === p.id ? `<div class="edit-inline">
+            <span style="font-size:13px;color:var(--muted)">Nombre</span>
+            <input type="text" id="en-${p.id}" value="${esc(p.nombre)}" style="width:150px"/>
+            <span style="font-size:13px;color:var(--muted)">Costo Q</span>
+            <input type="number" id="ec-${p.id}" value="${p.costo}" min="0" step="0.01"/>
+            <button class="btn btn-sm btn-primary" onclick="guardarProd(${p.id})">Guardar</button>
+            <button class="btn btn-sm" onclick="editProd=null;renderProductos()">Cancelar</button>
+          </div>` : ''}
+        </div>
+        <div class="actions">
+          ${editProd !== p.id ? `<button class="btn btn-sm btn-edit" onclick="editProd=${p.id};renderProductos()">Editar</button>` : ''}
+          <button class="btn btn-sm btn-danger" onclick="eliminarProd(${p.id})">Eliminar</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function guardarProd(id) {
+  const nombre = document.getElementById('en-' + id).value.trim();
+  const costo  = parseFloat(document.getElementById('ec-' + id).value);
+  if (!nombre || isNaN(costo)) return;
+  const p = productos.find(x => x.id === id);
+  await api('/api/productos/' + id, { method: 'PUT', body: JSON.stringify({ costo, nombre, unidad: p.unidad }) });
+  if (p) { p.costo = costo; p.nombre = nombre; }
+  editProd = null; renderProductos(); toast('Producto actualizado');
+}
+
+async function eliminarProd(id) {
+  if (!confirm('¿Eliminar este producto?')) return;
+  await api('/api/productos/' + id, { method: 'DELETE' });
+  productos = productos.filter(p => p.id !== id);
+  renderProductos(); toast('Producto eliminado');
+}
+
+// ── CLIENTES ───────────────────────────────────────────────────────────────
+async function agregarCliente() {
+  const nombre = document.getElementById('cl-nombre').value.trim();
+  const ruta   = document.getElementById('cl-ruta').value;
+  if (!nombre) { toast('Ingresa el nombre', 'err'); return; }
+  const r = await api('/api/clientes', { method: 'POST', body: JSON.stringify({ nombre, ruta }) });
+  if (r?.id) {
+    clientes.push({ id: r.id, nombre, ruta, user_id: me?.userId, ruta_nombre: me?.rutaNombre, color: me?.color });
+    document.getElementById('cl-nombre').value = '';
+    renderClientes(); toast('Cliente agregado');
+  }
+}
+
+async function eliminarCliente(id) {
+  if (!confirm('¿Eliminar este cliente?')) return;
+  await api('/api/clientes/' + id, { method: 'DELETE' });
+  clientes = clientes.filter(c => c.id !== id);
+  renderClientes(); toast('Cliente eliminado');
+}
+
+function renderClientes() {
+  const el = document.getElementById('lista-clientes');
+  if (!clientes.length) { el.innerHTML = '<p class="empty">Sin clientes aún.</p>'; return; }
+
+  if (me?.role === 'admin') {
+    const porRuta = {};
+    clientes.forEach(c => {
+      const key = c.ruta_nombre || 'Sin ruta';
+      if (!porRuta[key]) porRuta[key] = { color: c.color, items: [] };
+      porRuta[key].items.push(c);
+    });
+    el.innerHTML = Object.entries(porRuta).map(([rNombre, data]) => `
+      <div class="ruta-section">
+        <div class="ruta-header">
+          <div class="ruta-color-dot" style="background:${data.color}"></div>
+          <strong style="font-size:14px">${esc(rNombre)}</strong>
+          <span style="font-size:12px;color:var(--muted)">(${data.items.length} clientes)</span>
+        </div>
+        ${data.items.map(c => `
+          <div class="card" style="margin-bottom:6px;padding:10px 14px">
+            <div class="list-row">
+              <div>
+                <div class="item-name">${esc(c.nombre)}
+                  <span class="badge" style="background:${hexLight(data.color)};color:${data.color}">${c.ruta === 'ambos' ? 'Ambos días' : c.ruta}</span>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-danger" onclick="eliminarCliente(${c.id})">Eliminar</button>
+            </div>
+          </div>`).join('')}
+      </div>`).join('');
+  } else {
+    el.innerHTML = clientes.map(c => `
+      <div class="card" style="margin-bottom:8px;padding:10px 14px">
+        <div class="list-row">
+          <div>
+            <div class="item-name">${esc(c.nombre)}
+              <span class="badge bl">${c.ruta === 'ambos' ? 'Ambos días' : c.ruta}</span>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="eliminarCliente(${c.id})">Eliminar</button>
+        </div>
+      </div>`).join('');
+  }
+}
+
+// ── RUTA ───────────────────────────────────────────────────────────────────
+function renderRuta() {
+  const dia  = document.getElementById('dia-ruta').value;
+  const disp = clientes.filter(c => c.ruta === dia || c.ruta === 'ambos');
+  const el   = document.getElementById('ruta-lista');
+  if (!disp.length)    { el.innerHTML = '<p class="empty">No hay clientes para este día.</p>'; return; }
+  if (!productos.length){ el.innerHTML = '<p class="empty">Primero agrega productos.</p>'; return; }
+
+  el.innerHTML = disp.map(c => `
+    <div class="venta-block">
+      <div class="cn">${esc(c.nombre)} <span class="badge bl">${c.ruta === 'ambos' ? 'Ambos' : c.ruta}</span></div>
+      ${productos.map(p => `
+        <div class="venta-line">
+          <span class="lbl">${esc(p.nombre)}:</span>
+          <input class="vqty" type="number" id="qty-${c.id}-${p.id}" min="0" placeholder="Cant." step="1" oninput="recalcLine(${c.id},${p.id})"/>
+          <span>${esc(p.unidad)}(s) a Q</span>
+          <input class="vpv" type="number" id="pv-${c.id}-${p.id}" min="0" step="0.01" placeholder="Precio" oninput="recalcLine(${c.id},${p.id})"/>
+          <span>= <span class="vtotal" id="lt-${c.id}-${p.id}">Q0.00</span></span>
+        </div>`).join('')}
+      <div class="vcli-total">Total: <strong id="tot-${c.id}">Q0.00</strong></div>
+    </div>`).join('');
+}
+
+function recalcLine(cid, pid) {
+  const q  = parseFloat(document.getElementById(`qty-${cid}-${pid}`)?.value) || 0;
+  const pv = parseFloat(document.getElementById(`pv-${cid}-${pid}`)?.value)  || 0;
+  document.getElementById(`lt-${cid}-${pid}`).textContent = 'Q' + (q * pv).toFixed(2);
+  let tot = 0;
+  productos.forEach(p => {
+    tot += (parseFloat(document.getElementById(`qty-${cid}-${p.id}`)?.value)||0)
+         * (parseFloat(document.getElementById(`pv-${cid}-${p.id}`)?.value)||0);
+  });
+  const el = document.getElementById(`tot-${cid}`);
+  if (el) el.textContent = 'Q' + tot.toFixed(2);
+}
+
+async function guardarVentas() {
+  const dia  = document.getElementById('dia-ruta').value;
+  const disp = clientes.filter(c => c.ruta === dia || c.ruta === 'ambos');
+  const fecha = new Date().toLocaleDateString('es-GT');
+  const lista = [];
+  disp.forEach(c => {
+    productos.forEach(p => {
+      const q  = parseFloat(document.getElementById(`qty-${c.id}-${p.id}`)?.value)||0;
+      const pv = parseFloat(document.getElementById(`pv-${c.id}-${p.id}`)?.value)||0;
+      if (q > 0 && pv > 0) lista.push({
+        fecha, dia,
+        cliente_id: c.id, cliente_nombre: c.nombre,
+        producto_id: p.id, producto_nombre: p.nombre,
+        unidad: p.unidad, cantidad: q, precio_venta: pv,
+        costo: p.costo, total: q*pv, ganancia: q*(pv-p.costo)
+      });
+    });
+  });
+  if (!lista.length) { toast('No ingresaste ninguna venta', 'err'); return; }
+  const r = await api('/api/ventas', { method: 'POST', body: JSON.stringify({ ventas: lista }) });
+  if (r?.ok) { toast(`${r.count} venta(s) guardadas`); renderRuta(); }
+}
+
+// ── HISTORIAL ──────────────────────────────────────────────────────────────
+function renderHistorial() {
+  const tv = ventas.reduce((s, v) => s + v.total, 0);
+  const tc = new Set(ventas.map(v => v.cliente_id)).size;
+  document.getElementById('met-hist').innerHTML = `
+    <div class="metric"><div class="metric-lbl">Total vendido</div><div class="metric-val">Q${tv.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-lbl">Registros</div><div class="metric-val">${ventas.length}</div></div>
+    <div class="metric"><div class="metric-lbl">Clientes</div><div class="metric-val">${tc}</div></div>`;
+
+  const el = document.getElementById('hist-lista');
+  if (!ventas.length) { el.innerHTML = '<p class="empty">Sin ventas aún.</p>'; return; }
+
+  const ag = {};
+  ventas.forEach(v => {
+    const key = v.fecha + '|' + (v.ruta_nombre || '');
+    if (!ag[key]) ag[key] = { fecha: v.fecha, ruta: v.ruta_nombre, clientes: {} };
+    if (!ag[key].clientes[v.cliente_nombre]) ag[key].clientes[v.cliente_nombre] = [];
+    ag[key].clientes[v.cliente_nombre].push(v);
+  });
+
+  el.innerHTML = Object.values(ag).slice(0,30).map(grp => `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:600;color:var(--muted)">${grp.fecha}</div>
+        ${grp.ruta ? `<span class="badge" style="background:var(--accent-light);color:var(--accent)">${esc(grp.ruta)}</span>` : ''}
+      </div>
+      ${Object.entries(grp.clientes).map(([cn, vs]) => `
+        <div style="margin-bottom:10px">
+          <div class="item-name">${esc(cn)}</div>
+          ${vs.map(v => `<div style="font-size:13px;color:var(--muted);padding-left:10px;margin-top:2px">
+            ${v.cantidad} ${esc(v.unidad)}(s) de ${esc(v.producto_nombre)} — <strong style="color:var(--text)">Q${v.total.toFixed(2)}</strong>
+          </div>`).join('')}
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+// ── GANANCIAS ──────────────────────────────────────────────────────────────
+function initGanancias() {
+  document.getElementById('pin-overlay').style.display = 'flex';
+  document.getElementById('gan-inner').style.display   = 'none';
+  pinVal = ''; updDots();
+  document.getElementById('pin-err').textContent = '';
+}
+
+function pk(k) {
+  if (k === '←') pinVal = pinVal.slice(0,-1);
+  else if (k === 'ok') { checkPin(); return; }
+  else if (pinVal.length < 4) pinVal += k;
+  updDots();
+  if (pinVal.length === 4) checkPin();
+}
+
+function updDots() {
+  for (let i = 0; i < 4; i++)
+    document.getElementById('d'+i).className = 'dot'+(i < pinVal.length ? ' on' : '');
+}
+
+async function checkPin() {
+  const r = await api('/api/verify-pin', { method: 'POST', body: JSON.stringify({ pin: pinVal }) });
+  if (r?.ok) {
+    document.getElementById('pin-overlay').style.display = 'none';
+    document.getElementById('gan-inner').style.display   = 'block';
+    renderGanancias();
+  } else {
+    document.getElementById('pin-err').textContent = 'PIN incorrecto';
+    pinVal = ''; updDots();
+  }
+}
+
+async function cerrarAdmin() {
+  await api('/api/close-admin', { method: 'POST' });
+  document.getElementById('gan-inner').style.display   = 'none';
+  document.getElementById('pin-overlay').style.display = 'flex';
+  pinVal = ''; updDots();
+}
+
+async function renderGanancias() {
+  const gi = document.getElementById('gan-inner');
+  gi.innerHTML = '<div class="loading">Cargando datos...</div>';
+  const data = await api('/api/ganancias');
+  if (!data) return;
+  const { resumen, porRuta, porCliente, porProducto, porFecha } = data;
+  const tg = resumen.total_ganancia || 0;
+  const tv = resumen.total_ventas   || 0;
+  const tc = resumen.total_costos   || 0;
+  const mg = tv > 0 ? (tg/tv*100) : 0;
+
+  const rutaColors = { 'Boca del Monte': '#185FA5', 'Santa Fe': '#3B6D11' };
+  const rutaLights = { 'Boca del Monte': '#E6F1FB', 'Santa Fe': '#EAF3DE' };
+
+  gi.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="margin:0">Resumen total — ambas rutas</h3>
+      <button class="btn btn-sm btn-danger" onclick="cerrarAdmin()">Cerrar sesión admin</button>
+    </div>
+    <div class="metric-grid">
+      <div class="metric"><div class="metric-lbl">Ganancia neta</div><div class="metric-val pos">Q${tg.toFixed(2)}</div></div>
+      <div class="metric"><div class="metric-lbl">Total ventas</div><div class="metric-val">Q${tv.toFixed(2)}</div></div>
+      <div class="metric"><div class="metric-lbl">Total costos</div><div class="metric-val neg">Q${tc.toFixed(2)}</div></div>
+      <div class="metric"><div class="metric-lbl">Margen</div><div class="metric-val">${mg.toFixed(1)}%</div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:12px">
+      <h4>Por ruta</h4>
+      ${porRuta.map(r => {
+        const c = rutaColors[r.ruta_nombre] || '#185FA5';
+        const l = rutaLights[r.ruta_nombre] || '#E6F1FB';
+        return `<div class="list-row">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:10px;height:10px;border-radius:50%;background:${c};flex-shrink:0"></div>
+            <div>
+              <div class="item-name">${esc(r.ruta_nombre)}</div>
+              <div class="item-sub">Ventas: Q${r.ventas.toFixed(2)}</div>
+            </div>
+          </div>
+          <div class="pos" style="font-weight:700">+Q${r.ganancia.toFixed(2)}</div>
+        </div>`;
+      }).join('') || '<p class="empty">Sin datos</p>'}
+    </div>
+
+    <div class="card" style="margin-bottom:12px">
+      <h4>Por cliente (todas las rutas)</h4>
+      ${porCliente.map(r => {
+        const c = rutaColors[r.ruta_nombre] || '#185FA5';
+        const l = rutaLights[r.ruta_nombre] || '#E6F1FB';
+        return `<div class="list-row">
+          <div>
+            <div class="item-name">${esc(r.cliente_nombre)}
+              <span style="font-size:10px;padding:1px 6px;border-radius:10px;background:${l};color:${c}">${esc(r.ruta_nombre||'')}</span>
+            </div>
+            <div class="item-sub">Ventas: Q${r.ventas.toFixed(2)}</div>
+          </div>
+          <div class="pos" style="font-weight:700">+Q${r.ganancia.toFixed(2)}</div>
+        </div>`;
+      }).join('') || '<p class="empty">Sin datos</p>'}
+    </div>
+
+    <div class="card" style="margin-bottom:12px">
+      <h4>Por producto</h4>
+      ${porProducto.map(r => `
+        <div class="list-row">
+          <div><div class="item-name">${esc(r.producto_nombre)}</div><div class="item-sub">${r.unidades} unidades</div></div>
+          <div class="pos" style="font-weight:700">+Q${r.ganancia.toFixed(2)}</div>
+        </div>`).join('') || '<p class="empty">Sin datos</p>'}
+    </div>
+
+    <div class="card">
+      <h4>Últimas fechas</h4>
+      ${porFecha.map(r => {
+        const c = rutaColors[r.ruta_nombre] || '#185FA5';
+        const l = rutaLights[r.ruta_nombre] || '#E6F1FB';
+        return `<div class="list-row">
+          <div>
+            <div class="item-name">${r.fecha}
+              <span style="font-size:10px;padding:1px 6px;border-radius:10px;background:${l};color:${c}">${esc(r.ruta_nombre||'')}</span>
+            </div>
+            <div class="item-sub">Ventas: Q${r.ventas.toFixed(2)}</div>
+          </div>
+          <div class="pos" style="font-weight:700">+Q${r.ganancia.toFixed(2)}</div>
+        </div>`;
+      }).join('') || '<p class="empty">Sin datos</p>'}
+    </div>`;
+}
+
+// ── Utils ──────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function hexLight(hex) {
+  const m = { '#185FA5':'#E6F1FB','#3B6D11':'#EAF3DE','#854F0B':'#FAEEDA' };
+  return m[hex] || '#E6F1FB';
+}
+</script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Catalans Store — Iniciar sesión</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f0ede8;--surface:#fff;--accent:#185FA5;--accent-dark:#0e4a85;
+    --text:#1a1a1a;--muted:#6b6b6b;--border:rgba(0,0,0,0.12);
+    --red:#A32D2D;--radius:12px
+  }
+  html,body{height:100%}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);
+    display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+  .card{background:var(--surface);border-radius:20px;padding:40px 36px;
+    width:100%;max-width:380px;box-shadow:0 4px 40px rgba(0,0,0,.10)}
+  .logo{text-align:center;margin-bottom:32px}
+  .logo-icon{width:60px;height:60px;background:var(--accent);border-radius:16px;
+    display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:14px}
+  .logo h1{font-size:21px;font-weight:700;letter-spacing:-.5px}
+  .logo p{font-size:13px;color:var(--muted);margin-top:4px}
+  label{font-size:13px;font-weight:500;color:var(--muted);display:block;margin-bottom:6px}
+  .field{margin-bottom:16px}
+  input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);
+    font-size:15px;color:var(--text);background:#fafafa;outline:none;
+    transition:border-color .15s,box-shadow .15s;font-family:inherit}
+  input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(24,95,165,.10);background:#fff}
+  .btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;
+    border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;
+    transition:background .15s,transform .1s;font-family:inherit}
+  .btn:hover{background:var(--accent-dark)}
+  .btn:active{transform:scale(.98)}
+  .btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+  .error{background:#FCEBEB;color:var(--red);border:1px solid #F7C1C1;
+    border-radius:var(--radius);padding:10px 14px;font-size:13px;margin-top:14px;display:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);
+    border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;
+    margin-right:8px;vertical-align:middle}
+  .hints{margin-top:20px;padding-top:16px;border-top:0.5px solid var(--border)}
+  .hints-title{font-size:11px;color:var(--muted);text-align:center;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+  .hint-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;background:var(--bg);margin-bottom:5px}
+  .hint-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .hint-info{font-size:11px;color:var(--muted)}
+  .hint-info strong{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon" id="logo-icon">🐓</div>
+    <h1>Catalans Store</h1>
+    <p id="logo-sub">Sistema de rutas y ventas</p>
+  </div>
+
+  <div class="field">
+    <label for="username">Usuario</label>
+    <input type="text" id="username" autocomplete="username" placeholder="Ingresa tu usuario"
+      oninput="updateHint(this.value)"/>
+  </div>
+  <div class="field">
+    <label for="password">Contraseña</label>
+    <input type="password" id="password" autocomplete="current-password" placeholder="••••••••"/>
+  </div>
+
+  <button class="btn" id="btn-login" onclick="doLogin()">Iniciar sesión</button>
+  <div class="error" id="err"></div>
+
+  <div class="hints">
+    <div class="hints-title">Usuarios disponibles</div>
+    <div class="hint-row">
+      <div class="hint-dot" style="background:#854F0B"></div>
+      <div class="hint-info"><strong>catalans store</strong> — Administrador (todas las rutas)</div>
+    </div>
+    <div class="hint-row">
+      <div class="hint-dot" style="background:#185FA5"></div>
+      <div class="hint-info"><strong>boca del monte</strong> — Ruta Boca del Monte</div>
+    </div>
+    <div class="hint-row">
+      <div class="hint-dot" style="background:#3B6D11"></div>
+      <div class="hint-info"><strong>santa fe</strong> — Ruta Santa Fe</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const colors = {
+    'catalans store': '#854F0B',
+    'boca del monte': '#185FA5',
+    'santa fe':       '#3B6D11'
+  };
+
+  function updateHint(val) {
+    const c = colors[val.trim().toLowerCase()];
+    const icon = document.getElementById('logo-icon');
+    if (c) {
+      icon.style.background = c;
+      icon.style.transform  = 'scale(1.05)';
+    } else {
+      icon.style.background = '#185FA5';
+      icon.style.transform  = '';
+    }
+  }
+
+  document.getElementById('password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  async function doLogin() {
+    const btn  = document.getElementById('btn-login');
+    const err  = document.getElementById('err');
+    const user = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value;
+    if (!user || !pass) { showErr('Ingresa usuario y contraseña'); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Verificando...';
+    err.style.display = 'none';
+
+    try {
+      const res  = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: user, password: pass })
+      });
+      const data = await res.json();
+      if (data.ok) { window.location.href = '/'; }
+      else showErr(data.error || 'Error al iniciar sesión');
+    } catch(e) {
+      showErr('Error de conexión. Intenta de nuevo.');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'Iniciar sesión';
+    }
+  }
+
+  function showErr(msg) {
+    const el = document.getElementById('err');
+    el.textContent    = msg;
+    el.style.display  = 'block';
+  }
+</script>
+</body>
+</html>
